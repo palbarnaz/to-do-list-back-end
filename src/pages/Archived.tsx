@@ -7,7 +7,7 @@ import { useAppSelector } from '../store/hooks';
 import { selectAll } from '../store/modules/usersSlice';
 import Users from '../types/Users';
 
-const Favorites: React.FC = () => {
+const Archived: React.FC = () => {
     const navigate = useNavigate();
     const userLoggedEmail = useAppSelector((state) => state.userLogged.value);
     const users = useAppSelector(selectAll);
@@ -19,15 +19,15 @@ const Favorites: React.FC = () => {
         }
     }, []);
 
-    const favoriteTasks = useMemo(() => {
-        return userLogged?.tasks.filter((item) => item.favorite === true);
+    const archivedTasks = useMemo(() => {
+        return userLogged?.tasks.filter((item) => item.archived === true);
     }, [userLogged]);
 
     return (
         <>
-            <ListTasks title="Recados Favoritos" tasks={favoriteTasks || []} />
+            <ListTasks title="Recados arquivados" tasks={archivedTasks || []} />
         </>
     );
 };
 
-export default Favorites;
+export default Archived;

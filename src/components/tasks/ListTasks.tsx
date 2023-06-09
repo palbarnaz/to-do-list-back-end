@@ -1,4 +1,4 @@
-import { Container, Divider, Grid, Typography } from '@mui/material';
+import { Button, Container, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 
@@ -10,10 +10,10 @@ interface ListTasksProps {
     title: string;
     actionDelete?: (itemRemove: Task) => void;
     actionEdit?: (itemEdit: Task) => void;
-    actionFavorite?: (taskFavorite: Task) => void;
+    actionArchived?: (taskArchived: Task) => void;
 }
 
-const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actionEdit, actionFavorite }) => {
+const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actionEdit, actionArchived }) => {
     const executeAction = (item: Task, action?: (item: Task) => void) => {
         if (action) {
             action(item);
@@ -28,6 +28,88 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
                             <Typography variant="h4">{title}</Typography>
                             <Divider />
                         </Grid>
+                        <Grid item xs={12} display="flex" justifyContent="flex-end" alignItems="center">
+                            <Box component="form" width="300px" marginX="10px">
+                                <TextField
+                                    fullWidth
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: '#E0E3E7',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: '#ffffff',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#ffffff',
+                                            },
+                                        },
+                                    }}
+                                    label="Filtrar recado por descrição"
+                                    InputLabelProps={{
+                                        style: { color: 'white' },
+                                    }}
+                                    variant="outlined"
+                                />
+                            </Box>
+                            <Box>
+                                <FormControl
+                                    sx={{
+                                        width: '150px',
+                                        '& label.Mui-focused': {
+                                            color: '#ffffff',
+                                        },
+                                        '& .MuiInput-underline:after': {
+                                            borderBottomColor: '#ffffff',
+                                        },
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: '#E0E3E7',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: '#ffffff',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#ffffff',
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <InputLabel
+                                        sx={{
+                                            color: 'white',
+                                        }}
+                                    >
+                                        Status
+                                    </InputLabel>
+                                    <Select
+                                        sx={{ color: 'white' }}
+                                        // value={age}
+                                        label="Age"
+                                        // onChange={handleChange}
+                                    >
+                                        <MenuItem value={10}>Arquivados</MenuItem>
+                                        <MenuItem value={20}>Desarquivados</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} display="flex" justifyContent="flex-end">
+                            <Box>
+                                <Button
+                                    sx={{
+                                        height: '55px',
+                                        backgroundColor: '#3a3a3a',
+                                        ':hover': {
+                                            backgroundColor: '#3a3a3a',
+                                        },
+                                    }}
+                                    variant="contained"
+                                >
+                                    Filtrar
+                                </Button>
+                            </Box>
+                        </Grid>
                         {tasks.length ? (
                             tasks.map((item: any) => {
                                 return (
@@ -36,8 +118,8 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
                                         mode="tasks"
                                         description={item.description}
                                         detail={item.detail}
-                                        favorite={item.favorite}
-                                        actionFavorite={() => executeAction(item, actionFavorite)}
+                                        archived={item.archived}
+                                        actionArchived={() => executeAction(item, actionArchived)}
                                         actionEdit={() => executeAction(item, actionEdit)}
                                         actionDelete={() => executeAction(item, actionDelete)}
                                     />

@@ -1,6 +1,6 @@
 const routes = [
     { label: 'Recados', url: '/tasks' },
-    { label: 'Favoritos', url: '/favorites' },
+    { label: 'Arquivados', url: '/archived' },
 ];
 
 export default routes;

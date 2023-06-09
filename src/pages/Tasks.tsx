@@ -54,7 +54,7 @@ const Tasks: React.FC = () => {
 
     const saveTasks = () => {
         const userTasks = userLogged?.tasks || [];
-        const newTasks = [...userTasks, { id: Date.now(), description, detail, favorite: false }];
+        const newTasks = [...userTasks, { id: Date.now(), description, detail, archived: false }];
         dispatch(saveTask({ id: userLogged?.id, changes: { tasks: newTasks } }));
         setAlertCreate(true);
         setDescription('');
@@ -76,7 +76,7 @@ const Tasks: React.FC = () => {
     const editTask = useCallback(() => {
         const newTasks = userLogged.tasks.map((item) => {
             if (item.id === taskEdit?.id) {
-                return { ...item, description, detail, favorite: item.favorite };
+                return { ...item, description, detail, favorite: item.archived };
             }
             return item;
         });
@@ -111,10 +111,10 @@ const Tasks: React.FC = () => {
         }
     }, [userLogged, taskRemove]);
 
-    const addFavorite = (recado: Task) => {
+    const addArchived = (recado: Task) => {
         const newTasks = userLogged.tasks.map((item) => {
             if (item.id === recado.id) {
-                return { ...item, favorite: !item.favorite };
+                return { ...item, archived: !item.archived };
             }
             return item;
         });
@@ -137,7 +137,7 @@ const Tasks: React.FC = () => {
             <ListTasks
                 title="Meus Recados "
                 tasks={userLogged?.tasks || []}
-                actionFavorite={addFavorite}
+                actionArchived={addArchived}
                 actionDelete={openModalDelete}
                 actionEdit={openModalEdit}
             />
