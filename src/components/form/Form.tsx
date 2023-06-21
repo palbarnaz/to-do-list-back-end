@@ -1,12 +1,11 @@
 /* eslint-disable no-lonely-if */
 import { Box, Button, Grid, TextField, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { useAppSelector } from '../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { saveUserLogged } from '../../store/modules/userLoggedSlice';
-import { saveUser, selectAll } from '../../store/modules/usersSlice';
+import { clearError, loginUserThunk, saveUser } from '../../store/modules/userSlice';
 import AlertInfo from '../AlertInfo';
 
 interface FormProps {
@@ -25,10 +24,16 @@ const Form: React.FC<FormProps> = ({ mode, textButton }) => {
     const [alertCreateUser, setAlertCreateUser] = useState<boolean>(false);
     const [alertInfo, setAlertInfo] = useState<boolean>(false);
     const [alertUserError, setAlertUserError] = useState<boolean>(false);
-
-    const users = useAppSelector(selectAll);
-    const dispatch = useDispatch();
+    const { user, errorCreate, errorLogin, successCreate } = useAppSelector((state) => state.user);
+    const dispatch = useAppDispatch();
+    const userLogged = useAppSelector((state) => state.userLogged);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (sessionStorage.getItem('userLoggedId')) {
+            navigate('/tasks');
+        }
+    }, []);
 
     useEffect(() => {
         if (mode === 'signup') {
@@ -38,7 +43,7 @@ const Form: React.FC<FormProps> = ({ mode, textButton }) => {
                 setErrorEmail(!emailValid);
             }
 
-            const passwordValid = password.length >= 6;
+            const passwordValid = password.length >= 6 && password.length <= 8;
             if (password.length > 0) {
                 setErrorPassword(!passwordValid);
             }
@@ -52,36 +57,47 @@ const Form: React.FC<FormProps> = ({ mode, textButton }) => {
         }
     }, [emailUser, password, repassword, mode]);
 
+    useEffect(() => {
+        if (errorLogin) setAlertUserError(true);
+        dispatch(clearError());
+    }, [errorLogin]);
+
+    useEffect(() => {
+        if (successCreate) setAlertCreateUser(true);
+        dispatch(clearError());
+    }, [successCreate]);
+
+    useEffect(() => {
+        if (errorCreate) setAlertInfo(true);
+        // dispatch(clearError());
+    }, [errorCreate]);
+
+    useEffect(() => {
+        if (user) {
+            dispatch(saveUserLogged(user?.id ?? ''));
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (userLogged.value) {
+            navigate('/tasks');
+
+            sessionStorage.setItem('userLoggedId', userLogged.value ?? '');
+        }
+    }, [userLogged]);
+
     function addUsers(evento: React.FormEvent<HTMLFormElement>) {
         evento.preventDefault();
 
         if (mode === 'signup') {
-            const exist = users.some((item) => item.emailUser === emailUser);
-            if (exist) {
-                setAlertInfo(true);
-            } else {
-                dispatch(
-                    saveUser({
-                        id: Date.now(),
-                        emailUser,
-                        password,
-                        tasks: [],
-                    })
-                );
+            dispatch(saveUser({ emailUser, id: Date.now().toString(), password, tasks: [] }));
 
-                setAlertCreateUser(true);
-                setEmailUser('');
-                setPassword('');
-                setRepassword('');
-            }
+            setEmailUser('');
+            setPassword('');
+            setRepassword('');
         } else {
-            const findUser = users.find((valor) => valor.emailUser === emailUser && valor.password === password);
-            if (!findUser) {
-                setAlertUserError(true);
-                return;
-            }
-            dispatch(saveUserLogged(findUser.emailUser));
-            navigate('/tasks');
+            const login = { emailUser, password };
+            dispatch(loginUserThunk(login));
         }
     }
 

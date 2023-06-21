@@ -1,8 +1,6 @@
-import MenuIcon from '@mui/icons-material/Menu';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -13,18 +11,18 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import routes from '../../../Routes/routes';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { logoutUser } from '../../../store/modules/userLoggedSlice';
+import { clearUser } from '../../../store/modules/userSlice';
 
-const settings = ['Logout'];
+const settings = ['Sair'];
 
 const ResponsiveAppBar: React.FC = () => {
     const navigate = useNavigate();
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
     const dispatch = useAppDispatch();
-    const userLogged = useAppSelector((state) => state.userLogged.value);
+    const { user } = useAppSelector((state) => state.user);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -41,6 +39,8 @@ const ResponsiveAppBar: React.FC = () => {
 
     const handleCloseUserMenu = () => {
         dispatch(logoutUser());
+        dispatch(clearUser());
+        sessionStorage.removeItem('userLoggedId');
         navigate('/');
     };
 
@@ -60,42 +60,10 @@ const ResponsiveAppBar: React.FC = () => {
                             aria-haspopup="true"
                             onClick={handleOpenNavMenu}
                             color="inherit"
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{
-                                display: { xs: 'block', md: 'none' },
-                            }}
-                        >
-                            {routes.map((page) => (
-                                <MenuItem key={page.url} onClick={() => handleCloseNavMenu(page.url)}>
-                                    <Typography textAlign="center">{page.label}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
+                        />
                     </Box>
 
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {routes.map((page) => (
-                            <Button key={page.url} onClick={() => handleCloseNavMenu(page.url)} sx={{ my: 2, color: 'white', display: 'block' }}>
-                                {page.label}
-                            </Button>
-                        ))}
-                    </Box>
+                    <Box sx={{ flexGrow: 1 }} />
 
                     <Typography
                         variant="body1"
@@ -108,13 +76,13 @@ const ResponsiveAppBar: React.FC = () => {
                             textDecoration: 'none',
                         }}
                     >
-                        Bem vindo(a), {userLogged}
+                        Bem vindo(a), {user?.emailUser}
                     </Typography>
 
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar sx={{ color: '#ab47bc' }} alt={userLogged.toUpperCase()} src="/static/images/avatar/2.jpg" />
+                                <Avatar sx={{ color: '#ab47bc' }} alt={user?.emailUser.toUpperCase()} src="/static/images/avatar/2.jpg" />
                             </IconButton>
                         </Tooltip>
                         <Menu

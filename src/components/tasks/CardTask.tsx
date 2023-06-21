@@ -1,8 +1,6 @@
-import { FavoriteBorderSharp } from '@mui/icons-material';
 import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import EditSharpIcon from '@mui/icons-material/EditSharp';
-import FavoriteSharpIcon from '@mui/icons-material/FavoriteSharp';
 import FolderIcon from '@mui/icons-material/Folder';
 import { Card, CardActions, CardContent, Grid, IconButton, Typography } from '@mui/material';
 import React from 'react';
@@ -10,18 +8,18 @@ import React from 'react';
 interface CardTaskProps {
     description: string;
     detail: string;
-    archived: string;
+    archived: boolean;
     actionDelete?: () => void;
     actionEdit?: () => void;
     actionArchived?: () => void;
-    mode: 'tasks' | 'favorites';
+    mode: 'tasks' | 'archived';
 }
 
 const CardTask: React.FC<CardTaskProps> = ({ description, detail, archived, actionDelete, actionEdit, actionArchived, mode }) => {
     return (
         <>
             <Grid item xs={12} sm={6} md={3}>
-                <Card>
+                <Card className="h-full">
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="div">
                             {description}
@@ -46,7 +44,7 @@ const CardTask: React.FC<CardTaskProps> = ({ description, detail, archived, acti
                     ) : (
                         <CardActions>
                             <IconButton size="small">
-                                <FavoriteSharpIcon color="error" />
+                                <FolderIcon />
                             </IconButton>
                         </CardActions>
                     )}

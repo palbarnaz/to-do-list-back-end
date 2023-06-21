@@ -1,6 +1,3 @@
-const routes = [
-    { label: 'Recados', url: '/tasks' },
-    { label: 'Arquivados', url: '/archived' },
-];
+const routes = [{ label: 'Lista de Recados', url: '/tasks' }];
 
 export default routes;

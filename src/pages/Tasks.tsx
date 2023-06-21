@@ -8,9 +8,9 @@ import DialogTask from '../components/tasks/DialogTask';
 import ListTasks from '../components/tasks/ListTasks';
 import ModalConfirm from '../components/tasks/ModalConfirm';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { saveTask, selectAll } from '../store/modules/usersSlice';
+import { deleteTask, editTask, getAllTask, saveTask, selectAll, statusTask, taskRequest, tEdit } from '../store/modules/tasksSlice';
+import { getUserId } from '../store/modules/userSlice';
 import { Task } from '../types/Task';
-import Users from '../types/Users';
 
 const Tasks: React.FC = () => {
     const navigate = useNavigate();
@@ -22,28 +22,29 @@ const Tasks: React.FC = () => {
     const [open, setOpen] = React.useState(false);
     const [taskRemove, setTaskRemove] = useState<Task | undefined>();
     const [taskEdit, setTaskEdit] = useState<Task | undefined>();
-    const [alertCreate, setAlertCreate] = useState<boolean>(false);
-    const [alertEdit, setAlertEdit] = useState<boolean>(false);
-    const [alertDelete, setAlertDelete] = useState<boolean>(false);
+    const [alertTask, setAlertTask] = useState<boolean>(false);
 
     const dispatch = useAppDispatch();
-    const users = useAppSelector(selectAll);
-    const userLoggedEmail = useAppSelector((state) => state.userLogged.value);
-    const userLogged = users.find((item) => item.emailUser === userLoggedEmail) as Users;
+    const { user } = useAppSelector((state) => state.user);
+    const tasks = useAppSelector(selectAll);
+    const userLogged = sessionStorage.getItem('userLoggedId');
 
     useEffect(() => {
-        if (!userLoggedEmail) {
+        if (!userLogged) {
             navigate('/');
         }
+
+        dispatch(getUserId(userLogged ?? ''));
+        dispatch(getAllTask(userLogged ?? ''));
     }, []);
 
     useEffect(() => {
-        if (description.length > 3) {
+        if (description.length > 3 && detail.length > 3) {
             setValid(true);
         } else {
             setValid(false);
         }
-    }, [description]);
+    }, [description, detail]);
 
     const handleClickOpen = () => {
         setOpenDialogCreate(true);
@@ -52,11 +53,19 @@ const Tasks: React.FC = () => {
         setOpenDialogCreate(false);
     };
 
+    const existTask = (description: string) => {
+        const exist = tasks.some((t) => t.description === description.toLocaleLowerCase());
+        if (exist) {
+            setAlertTask(true);
+        }
+        return exist;
+    };
+
     const saveTasks = () => {
-        const userTasks = userLogged?.tasks || [];
-        const newTasks = [...userTasks, { id: Date.now(), description, detail, archived: false }];
-        dispatch(saveTask({ id: userLogged?.id, changes: { tasks: newTasks } }));
-        setAlertCreate(true);
+        if (!existTask(description)) {
+            const userId = user?.id ?? '';
+            dispatch(saveTask({ task: { id: Date.now().toString(), description, detail, archived: false }, idUser: userId }));
+        }
         setDescription('');
         setDetail('');
         setOpenDialogCreate(false);
@@ -64,6 +73,7 @@ const Tasks: React.FC = () => {
 
     const openModalEdit = (itemEdit: Task) => {
         setTaskEdit(itemEdit);
+
         setDescription(itemEdit.description);
         setDetail(itemEdit.detail);
         setOpenDialogEdit(true);
@@ -71,22 +81,23 @@ const Tasks: React.FC = () => {
 
     const handleCloseEdit = () => {
         setOpenDialogEdit(false);
+        setDescription('');
+        setDetail('');
     };
 
-    const editTask = useCallback(() => {
-        const newTasks = userLogged.tasks.map((item) => {
-            if (item.id === taskEdit?.id) {
-                return { ...item, description, detail, favorite: item.archived };
-            }
-            return item;
-        });
+    const editT = useCallback(() => {
+        if (!existTask(description)) {
+            const newTask = { id: taskEdit?.id, description, detail, archived: taskEdit?.archived } as Task;
+            const userId = user?.id ?? '';
+            const taskId = taskEdit?.id ?? '';
+            const taskEdited = { idTask: taskId, idUser: userId, tEdit: newTask } as tEdit;
+            dispatch(editTask(taskEdited));
+        }
 
-        dispatch(saveTask({ id: userLogged.id, changes: { tasks: newTasks } }));
-        setAlertEdit(true);
         setDescription('');
         setDetail('');
         setOpenDialogEdit(false);
-    }, [userLogged, taskEdit, description, detail]);
+    }, [taskEdit, description, detail]);
 
     const openModalDelete = (itemRemove: Task) => {
         setTaskRemove(itemRemove);
@@ -99,52 +110,39 @@ const Tasks: React.FC = () => {
     }, []);
 
     const removeTask = useCallback(() => {
-        const index = userLogged.tasks.findIndex((item) => item.id === taskRemove?.id);
+        const tRemove = { idUser: user?.id, idTask: taskRemove?.id } as taskRequest;
 
-        if (index !== -1) {
-            const newTasks = [...userLogged.tasks];
-            newTasks.splice(index, 1);
+        dispatch(deleteTask(tRemove));
 
-            dispatch(saveTask({ id: userLogged.id, changes: { tasks: newTasks } }));
-            closeModalConfirm();
-            setAlertDelete(true);
-        }
-    }, [userLogged, taskRemove]);
+        closeModalConfirm();
+    }, [taskRemove]);
 
     const addArchived = (recado: Task) => {
-        const newTasks = userLogged.tasks.map((item) => {
-            if (item.id === recado.id) {
-                return { ...item, archived: !item.archived };
-            }
-            return item;
-        });
-        dispatch(saveTask({ id: userLogged.id, changes: { tasks: newTasks } }));
+        const status = recado.archived;
+
+        const tArchived = { idUser: user?.id, idTask: recado?.id, archived: !status } as taskRequest;
+
+        dispatch(statusTask(tArchived));
     };
 
     const cancelAlert = () => {
-        if (alertCreate) {
-            setAlertCreate(false);
-        } else if (alertEdit) {
-            setAlertEdit(false);
-            return;
+        if (alertTask) {
+            setAlertTask(false);
         }
-
-        setAlertDelete(false);
     };
 
     return (
         <>
             <ListTasks
                 title="Meus Recados "
-                tasks={userLogged?.tasks || []}
+                tasks={tasks || []}
                 actionArchived={addArchived}
                 actionDelete={openModalDelete}
                 actionEdit={openModalEdit}
             />
 
-            <AlertInfo actionCancel={cancelAlert} show={alertEdit} msg="Recado editado com sucesso!" type="success" />
-            <AlertInfo actionCancel={cancelAlert} show={alertCreate} msg="Recado cadastrado com sucesso!" type="success" />
-            <AlertInfo actionCancel={cancelAlert} show={alertDelete} msg="Recado excluido" type="error" />
+            <AlertInfo actionCancel={cancelAlert} show={alertTask} msg="Recado já existente" type="error" />
+
             <DialogTask
                 title="Adicionar recado"
                 titleBtn="Cadastrar"
@@ -165,11 +163,10 @@ const Tasks: React.FC = () => {
                 detail={detail}
                 actionDetail={(ev) => {
                     setDetail(ev.target.value);
-                    console.log(ev.target.value);
                 }}
                 actionDescription={(ev) => setDescription(ev.target.value)}
                 actionCancel={handleCloseEdit}
-                actionConfirm={editTask}
+                actionConfirm={editT}
             />
             <ModalConfirm
                 actionCancel={closeModalConfirm}

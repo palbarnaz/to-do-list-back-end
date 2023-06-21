@@ -1,9 +1,11 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
+import { tasksReducer } from './tasksSlice';
 import { userLoggedReducer } from './userLoggedSlice';
-import { usersReducer } from './usersSlice';
+import { userReducer } from './userSlice';
 
 export default combineReducers({
-    users: usersReducer,
+    user: userReducer,
     userLogged: userLoggedReducer,
+    tasks: tasksReducer,
 });
