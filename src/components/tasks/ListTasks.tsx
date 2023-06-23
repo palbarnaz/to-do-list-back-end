@@ -23,22 +23,20 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
     const dispatch = useAppDispatch();
 
     const handleFilter = () => {
-        if (tasks.length) {
-            let status;
-            if (valueSelect === 'a') {
-                status = true;
-            } else if (valueSelect === 'd') {
-                status = false;
-            }
-            let filter = {} as tFilter;
-
-            if (status !== undefined) {
-                filter = { idUser: user?.id, description: filterDescription, archived: status } as tFilter;
-            } else {
-                filter = { idUser: user?.id, description: filterDescription } as tFilter;
-            }
-            dispatch(tasksFilter(filter));
+        let status;
+        if (valueSelect === 'a') {
+            status = true;
+        } else if (valueSelect === 'd') {
+            status = false;
         }
+        let filter = {} as tFilter;
+
+        if (status !== undefined) {
+            filter = { idUser: user?.id, description: filterDescription, archived: status } as tFilter;
+        } else {
+            filter = { idUser: user?.id, description: filterDescription } as tFilter;
+        }
+        dispatch(tasksFilter(filter));
     };
 
     const clearFilter = () => {

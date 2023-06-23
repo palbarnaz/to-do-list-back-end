@@ -19,7 +19,7 @@ const CardTask: React.FC<CardTaskProps> = ({ description, detail, archived, acti
     return (
         <>
             <Grid item xs={12} sm={6} md={3}>
-                <Card className="h-full">
+                <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="div">
                             {description}

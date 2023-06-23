@@ -31,17 +31,12 @@ const ResponsiveAppBar: React.FC = () => {
         setAnchorElUser(event.currentTarget);
     };
 
-    const handleCloseNavMenu = (url: string) => {
-        setAnchorElNav(null);
-
-        navigate(url);
-    };
-
     const handleCloseUserMenu = () => {
+        navigate('/');
+        sessionStorage.removeItem('userLoggedId');
+
         dispatch(logoutUser());
         dispatch(clearUser());
-        sessionStorage.removeItem('userLoggedId');
-        navigate('/');
     };
 
     const handleClose = () => {

@@ -56,7 +56,6 @@ export const getAllTask = createAsyncThunk('tasks/getAllTask', async (id: string
 
         return response;
     } catch (error: any) {
-        console.log(error);
         throw new Error((error as AxiosError<{ message: string }>).response?.data.message);
     }
 });
@@ -97,8 +96,6 @@ export const deleteTask = createAsyncThunk('tasks/deleteTask', async ({ idUser, 
 });
 
 export const statusTask = createAsyncThunk('tasks/statusTask', async ({ idUser, idTask, archived }: taskRequest) => {
-    console.log(archived);
-
     try {
         const response = await taskStatus(idUser, idTask, archived);
 
