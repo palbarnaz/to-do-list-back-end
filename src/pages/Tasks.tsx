@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Fab } from '@mui/material';
+import { Box, CircularProgress, Fab } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ import DialogTask from '../components/tasks/DialogTask';
 import ListTasks from '../components/tasks/ListTasks';
 import ModalConfirm from '../components/tasks/ModalConfirm';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { deleteTask, editTask, getAllTask, saveTask, selectAll, statusTask, taskRequest, tEdit } from '../store/modules/tasksSlice';
+import { deleteTask, editTask, getAllTask, saveTask, selectAll, statusTask, taskDelete, taskRequest, tEdit } from '../store/modules/tasksSlice';
 import { getUserId } from '../store/modules/userSlice';
 import { Task } from '../types/Task';
 
@@ -26,6 +26,8 @@ const Tasks: React.FC = () => {
 
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.user);
+    const { loading } = useAppSelector((state) => state.tasks);
+
     const tasks = useAppSelector(selectAll);
     const userLogged = sessionStorage.getItem('userLoggedId');
 
@@ -88,9 +90,9 @@ const Tasks: React.FC = () => {
     const editT = useCallback(() => {
         if (!existTask(description)) {
             const newTask = { id: taskEdit?.id, description, detail, archived: taskEdit?.archived } as Task;
-            const userId = user?.id ?? '';
+
             const taskId = taskEdit?.id ?? '';
-            const taskEdited = { idTask: taskId, idUser: userId, tEdit: newTask } as tEdit;
+            const taskEdited = { idTask: taskId, tEdit: newTask } as tEdit;
             dispatch(editTask(taskEdited));
         }
 
@@ -110,7 +112,7 @@ const Tasks: React.FC = () => {
     }, []);
 
     const removeTask = useCallback(() => {
-        const tRemove = { idUser: user?.id, idTask: taskRemove?.id } as taskRequest;
+        const tRemove = { idUser: user?.id, idTask: taskRemove?.id } as taskDelete;
 
         dispatch(deleteTask(tRemove));
 
@@ -120,7 +122,7 @@ const Tasks: React.FC = () => {
     const addArchived = (recado: Task) => {
         const status = recado.archived;
 
-        const tArchived = { idUser: user?.id, idTask: recado?.id, archived: !status } as taskRequest;
+        const tArchived = { idTask: recado?.id, archived: !status } as taskRequest;
 
         dispatch(statusTask(tArchived));
     };

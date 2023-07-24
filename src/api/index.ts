@@ -43,8 +43,8 @@ export async function createTask(idUser: string, task: Task) {
     const res = await api.post(`tasks/${idUser}`, task);
     return res.data;
 }
-export async function taskEdit(idUser: string, idTask: string, task: Task) {
-    const res = await api.put(`tasks/${idUser}/${idTask}`, task);
+export async function taskEdit(idTask: string, task: Task) {
+    const res = await api.put(`tasks/${idTask}`, task);
     return res.data;
 }
 
@@ -53,8 +53,8 @@ export async function taskDelete(idUser: string, idTask: string) {
     return res.data;
 }
 
-export async function taskStatus(idUser: string, idTask: string, archived: boolean) {
-    const res = await api.put(`tasks/${idUser}/statusTask/${idTask}`, { archived });
+export async function taskStatus(idTask: string, archived: boolean) {
+    const res = await api.put(`tasks/statusTask/${idTask}`, { archived });
 
     return res.data;
 }

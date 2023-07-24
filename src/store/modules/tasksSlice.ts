@@ -7,7 +7,6 @@ import { createTask, getFilter, getTask, taskDelete, taskEdit, taskStatus } from
 import { Task } from '../../types/Task';
 
 const adapter = createEntityAdapter<Task>({
-    // selectId: (item) => item.id,
     selectId: (item) => {
         if (item && item.id) {
             return item.id;
@@ -23,11 +22,16 @@ type tCreate = {
 };
 
 export type tEdit = {
-    idUser: string;
     idTask: string;
     tEdit: Task;
 };
 export type taskRequest = {
+    idTask: string;
+    archived: boolean;
+    task?: Task;
+};
+
+export type taskDelete = {
     idUser: string;
     idTask: string;
     archived: boolean;
@@ -75,9 +79,9 @@ export const tasksFilter = createAsyncThunk('tasks/filterTasks', async ({ idUser
     }
 });
 
-export const editTask = createAsyncThunk('tasks/editTask', async ({ idUser, idTask, tEdit }: tEdit) => {
+export const editTask = createAsyncThunk('tasks/editTask', async ({ idTask, tEdit }: tEdit) => {
     try {
-        const response = await taskEdit(idUser, idTask, tEdit);
+        const response = await taskEdit(idTask, tEdit);
 
         return response;
     } catch (error: any) {
@@ -85,19 +89,19 @@ export const editTask = createAsyncThunk('tasks/editTask', async ({ idUser, idTa
     }
 });
 
-export const deleteTask = createAsyncThunk('tasks/deleteTask', async ({ idUser, idTask }: taskRequest) => {
+export const deleteTask = createAsyncThunk('tasks/deleteTask', async ({ idUser, idTask }: taskDelete) => {
     try {
-        const response = await taskDelete(idUser, idTask);
+        await taskDelete(idUser, idTask);
 
-        return response;
+        return idTask;
     } catch (error: any) {
         throw new Error((error as AxiosError<{ message: string }>).response?.data.message);
     }
 });
 
-export const statusTask = createAsyncThunk('tasks/statusTask', async ({ idUser, idTask, archived }: taskRequest) => {
+export const statusTask = createAsyncThunk('tasks/statusTask', async ({ idTask, archived }: taskRequest) => {
     try {
-        const response = await taskStatus(idUser, idTask, archived);
+        const response = await taskStatus(idTask, archived);
 
         return response;
     } catch (error: any) {
@@ -107,30 +111,53 @@ export const statusTask = createAsyncThunk('tasks/statusTask', async ({ idUser, 
 
 const tasks = createSlice({
     name: 'tasks',
-    initialState: adapter.getInitialState,
+    initialState: adapter.getInitialState({
+        loading: false,
+    }),
     reducers: {},
     extraReducers(builder) {
+        builder.addCase(saveTask.pending, (state) => {
+            state.loading = true;
+        });
         builder.addCase(saveTask.fulfilled, (state, action) => {
-            adapter.setAll(state, action.payload);
+            adapter.addOne(state, action.payload);
+            state.loading = false;
+        });
+        builder.addCase(getAllTask.pending, (state) => {
+            state.loading = true;
         });
         builder.addCase(getAllTask.fulfilled, (state, action) => {
             adapter.setAll(state, action.payload);
+            state.loading = false;
+        });
+        builder.addCase(editTask.pending, (state) => {
+            state.loading = true;
         });
         builder.addCase(editTask.fulfilled, (state, action) => {
-            adapter.setAll(state, action.payload);
+            adapter.upsertOne(state, action.payload);
+            state.loading = false;
+        });
+        builder.addCase(deleteTask.pending, (state) => {
+            state.loading = true;
         });
         builder.addCase(deleteTask.fulfilled, (state, action) => {
-            adapter.setAll(state, action.payload);
+            adapter.removeOne(state, action.payload);
+            state.loading = false;
+        });
+        builder.addCase(statusTask.pending, (state) => {
+            state.loading = true;
         });
         builder.addCase(statusTask.fulfilled, (state, action) => {
-            adapter.setAll(state, action.payload);
+            adapter.upsertOne(state, action.payload);
+            state.loading = false;
+        });
+        builder.addCase(tasksFilter.pending, (state) => {
+            state.loading = true;
         });
         builder.addCase(tasksFilter.fulfilled, (state, action) => {
             adapter.setAll(state, action.payload);
+            state.loading = false;
         });
-        // builder.addCase(saveTask.rejected, (state, action) => {
-        //     state.errorCreate = action.error.message || 'erro ao criar task';
-        // });
     },
 });
 

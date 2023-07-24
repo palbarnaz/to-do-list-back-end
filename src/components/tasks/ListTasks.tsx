@@ -1,4 +1,4 @@
-import { Button, Container, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
@@ -20,7 +20,9 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
     const [valueSelect, setValueSelect] = useState('');
 
     const { user } = useAppSelector((state) => state.user);
+
     const dispatch = useAppDispatch();
+    const { loading } = useAppSelector((state) => state.tasks);
 
     const handleFilter = () => {
         let status;
@@ -50,6 +52,30 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
             action(item);
         }
     };
+
+    const renderTasks = () => {
+        return tasks.length ? (
+            tasks.map((item: Task) => {
+                return (
+                    <CardTask
+                        key={item.id}
+                        mode="tasks"
+                        description={item.description}
+                        detail={item.detail}
+                        archived={item.archived}
+                        actionArchived={() => executeAction(item, actionArchived)}
+                        actionEdit={() => executeAction(item, actionEdit)}
+                        actionDelete={() => executeAction(item, actionDelete)}
+                    />
+                );
+            })
+        ) : (
+            <Box margin={5}>
+                <Typography variant="h6">Nenhum recado existente!</Typography>
+            </Box>
+        );
+    };
+
     return (
         <Grid container marginBottom={10}>
             <Grid item xs={12}>
@@ -167,25 +193,13 @@ const ListTasks: React.FC<ListTasksProps> = ({ tasks, title, actionDelete, actio
                                 </Button>
                             </Box>
                         </Grid>
-                        {tasks.length ? (
-                            tasks.map((item: any) => {
-                                return (
-                                    <CardTask
-                                        key={item.id}
-                                        mode="tasks"
-                                        description={item.description}
-                                        detail={item.detail}
-                                        archived={item.archived}
-                                        actionArchived={() => executeAction(item, actionArchived)}
-                                        actionEdit={() => executeAction(item, actionEdit)}
-                                        actionDelete={() => executeAction(item, actionDelete)}
-                                    />
-                                );
-                            })
-                        ) : (
-                            <Box margin={5}>
-                                <Typography variant="h6">Nenhum recado existente!</Typography>
+
+                        {loading ? (
+                            <Box width="100vw" height="40vh" display="flex" justifyContent="center" alignItems="center">
+                                <CircularProgress color="inherit" size="70px" />
                             </Box>
+                        ) : (
+                            renderTasks()
                         )}
                     </Grid>
                 </Container>
